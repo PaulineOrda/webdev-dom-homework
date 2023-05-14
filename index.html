@@ -28,13 +28,13 @@
   const listElement = document.getElementById("list");
   const nameInputElement = document.getElementById("name-input");
   const commentTextareaElement = document.getElementById("comment-text");
-  const commentDate = new Date();
   const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
 
   const initEventListeners = () => {
     const buttonElements = document.querySelectorAll(".like-button");
     for (const buttonElement of buttonElements) {
       buttonElement.addEventListener("click", () => {
+        event.stopPropagation();
         const index = buttonElement.dataset.index;
         if (comments[index].buttonClass == "like-button -active-like") {
           comments[index].likeCounter--;
@@ -44,6 +44,15 @@
           comments[index].buttonClass = "like-button -active-like";
         }
         renderComments();
+      })
+    }
+  }
+  const initAnswerListeners = () => {
+    const commentElements = document.querySelectorAll(".comment");
+    for (const commentElement of commentElements) {
+      commentElement.addEventListener("click", () => {
+        const index = commentElement.dataset.index;
+        commentTextareaElement.value = `>${comments[index].text}\n${comments[index].userName}`;
       })
     }
   }
@@ -58,7 +67,7 @@
     },
     {
       userName: "Варвара Н.",
-      text: "мне нравится как оформлена эта страница!",
+      text: "Мне нравится как оформлена эта страница!",
       likeCounter: 75,
       buttonClass: "like-button -active-like",
       date: new Date(2022, 1, 13, 19, 22)
@@ -67,7 +76,7 @@
 
   const renderComments = () => {
     const commentsHtml = comments.map((comment, index) => {
-      return `<li class="comment">
+      return `<li data-index="${index}"class="comment">
           <div class="comment-header">
             <div>${comment.userName}</div>
             <div>${comment.date.toLocaleDateString('ru-RU', options)}</div>
@@ -89,6 +98,7 @@
 
     listElement.innerHTML = commentsHtml;
     initEventListeners();
+    initAnswerListeners();
   }
 
   renderComments();
@@ -116,8 +126,16 @@
     }
 
     comments.push({
-      userName: nameInputElement.value,
-      text: commentTextareaElement.value,
+      userName: nameInputElement.value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;"),
+      text: commentTextareaElement.value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;"),
       likeCounter: 0,
       buttonClass: "like-button",
       date: new Date()
