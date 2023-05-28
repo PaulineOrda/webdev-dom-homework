@@ -10,40 +10,6 @@
 <body>
   <div class="container">
     <ul id="list" class="comments">
-      <li class="comment">
-        <div class="comment-header">
-          <div>Глеб Фокин</div>
-          <div>12.02.22 12:18</div>
-        </div>
-        <div class="comment-body">
-          <div class="comment-text">
-            Это будет первый комментарий на этой странице
-          </div>
-        </div>
-        <div class="comment-footer">
-          <div class="likes">
-            <span class="likes-counter">3</span>
-            <button class="like-button"></button>
-          </div>
-        </div>
-      </li>
-      <li class="comment">
-        <div class="comment-header">
-          <div>Варвара Н.</div>
-          <div>13.02.22 19:22</div>
-        </div>
-        <div class="comment-body">
-          <div class="comment-text">
-            Мне нравится как оформлена эта страница! ❤
-          </div>
-        </div>
-        <div class="comment-footer">
-          <div class="likes">
-            <span class="likes-counter">75</span>
-            <button class="like-button -active-like"></button>
-          </div>
-        </div>
-      </li>
     </ul>
     <div class="add-form">
       <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
@@ -64,7 +30,68 @@
   const commentTextareaElement = document.getElementById("comment-text");
   const commentDate = new Date();
   const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
-  const likeCounter = 0;
+
+  const initEventListeners = () => {
+    const buttonElements = document.querySelectorAll(".like-button");
+    for (const buttonElement of buttonElements) {
+      buttonElement.addEventListener("click", () => {
+        const index = buttonElement.dataset.index;
+        if (comments[index].buttonClass == "like-button -active-like") {
+          comments[index].likeCounter--;
+          comments[index].buttonClass = "like-button";
+        } else {
+          comments[index].likeCounter++;
+          comments[index].buttonClass = "like-button -active-like";
+        }
+        renderComments();
+      })
+    }
+  }
+
+  const comments = [
+    {
+      userName: "Глеб Фокин",
+      text: "Это будет первый комментарий на этой странице",
+      likeCounter: 3,
+      buttonClass: "like-button",
+      date: new Date(2022, 1, 12, 12, 18)
+    },
+    {
+      userName: "Варвара Н.",
+      text: "мне нравится как оформлена эта страница!",
+      likeCounter: 75,
+      buttonClass: "like-button -active-like",
+      date: new Date(2022, 1, 13, 19, 22)
+    }
+  ];
+
+  const renderComments = () => {
+    const commentsHtml = comments.map((comment, index) => {
+      return `<li class="comment">
+          <div class="comment-header">
+            <div>${comment.userName}</div>
+            <div>${comment.date.toLocaleDateString('ru-RU', options)}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">
+              ${comment.text}
+            </div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">${comment.likeCounter}</span>
+              <button data-index="${index}"class="${comment.buttonClass}"></button>
+            </div>
+          </div>
+        </li>`;
+    })
+      .join("");
+
+    listElement.innerHTML = commentsHtml;
+    initEventListeners();
+  }
+
+  renderComments();
 
   nameInputElement.addEventListener("input", () => {
     if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
@@ -88,30 +115,19 @@
       return;
     }
 
-    const oldListHtml = listElement.innerHTML;
-    listElement.innerHTML =
-      oldListHtml +
-      `<li class="comment">
-          <div class="comment-header">
-            <div>${nameInputElement.value}</div>
-            <div>${commentDate.toLocaleDateString('ru-RU', options)}</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              ${commentTextareaElement.value}
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">${likeCounter}</span>
-              <button class="like-button"></button>
-            </div>
-          </div>
-        </li>`;
+    comments.push({
+      userName: nameInputElement.value,
+      text: commentTextareaElement.value,
+      likeCounter: 0,
+      buttonClass: "like-button",
+      date: new Date()
+    })
 
+    renderComments();
     nameInputElement.value = "";
     commentTextareaElement.value = "";
   });
+
 </script>
 
 </html>
