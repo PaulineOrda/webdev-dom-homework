@@ -35,12 +35,14 @@ body {
   }
 
   .comments {
+    white-space: pre-line;
     display: flex;
     flex-direction: column;
     gap: 24px;
   }
 
   .comment {
+    white-space: pre-line;
     padding: 48px;
   }
 
