@@ -141,3 +141,7 @@ body {
   .error {
     background-color: gray;
   }
+
+  .none {
+    display: none;
+  }

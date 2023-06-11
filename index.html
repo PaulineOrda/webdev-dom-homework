@@ -12,8 +12,14 @@
     <ul id="list" class="comments">
     </ul>
     <div id="comment-add-form" class="add-form">
+      <input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
+      <textarea id="comment-text" type="textarea" class="add-form-text" placeholder="Введите ваш комментарий"
+        rows="4"></textarea>
+      <div class="add-form-row">
+        <button id="add-button" class="add-form-button">Написать</button>
+      </div>
     </div>
-    <div class="form-loading">Комментарий добавляется...</div>
+    <div id="loading" class="form-loading">Комментарий добавляется...</div>
   </div>
 </body>
 
@@ -21,8 +27,13 @@
   "use strict";
   const listElement = document.getElementById("list");
   const formElement = document.getElementById("comment-add-form");
+  const buttonElement = document.getElementById("add-button");
+  const loadingElement = document.getElementById("loading");
+  const nameInputElement = document.getElementById("name-input");
+  const commentTextareaElement = document.getElementById("comment-text");
   const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
   let comments = [];
+  const host = "https://wedev-api.sky.pro/api/v1/pauline-orda";
 
   const initEventListeners = () => {
     const buttonElements = document.querySelectorAll(".like-button");
@@ -30,7 +41,7 @@
       buttonElement.addEventListener("click", () => {
         event.stopPropagation();
         const index = buttonElement.dataset.index;
-        if (comments[index].isLiked == true) {
+        if (comments[index].isLiked === true) {
           comments[index].likeCounter--;
           comments[index].isLiked = false;
         } else {
@@ -52,7 +63,7 @@
   }
 
   const fetchAndRenderComments = () => {
-    return fetch("https://wedev-api.sky.pro/api/v1/pauline-orda/comments", {
+    return fetch(host + "/comments", {
       method: "GET"
     })
       .then((response) => {
@@ -103,101 +114,85 @@
     initAnswerListeners();
   }
 
-  const renderForm = () => {
-    document.querySelector(".form-loading").style.display = "none";
-    const formHtml = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
-      <textarea id="comment-text" type="textarea" class="add-form-text" placeholder="Введите ваш комментарий"
-        rows="4"></textarea>
-      <div class="add-form-row">
-        <button id="add-button" class="add-form-button">Написать</button>`;
-
-    formElement.innerHTML = formHtml;
-
-    const buttonElement = document.getElementById("add-button");
-    const nameInputElement = document.getElementById("name-input");
-    const commentTextareaElement = document.getElementById("comment-text");
-
-    nameInputElement.addEventListener("input", () => {
-      if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
-        buttonElement.removeAttribute("disabled");
-        buttonElement.classList.remove("error");
-      }
-    });
-
-    commentTextareaElement.addEventListener("input", () => {
-      if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
-        buttonElement.removeAttribute("disabled");
-        buttonElement.classList.remove("error");
-      }
-    });
-
-    buttonElement.addEventListener("click", () => {
-      if (nameInputElement.value === "" || commentTextareaElement.value === "") {
-        buttonElement.setAttribute("disabled", "disabled");
-        buttonElement.classList.add("error");
-        return;
-      }
-
-      // formElement.textContent = "Комментарий добавляется..."
-      document.querySelector(".form-loading").style.display = "block";
-      document.querySelector(".add-form").style.display = "none";
-      fetch("https://wedev-api.sky.pro/api/v1/pauline-orda/comments", {
-        method: "POST",
-        body: JSON.stringify({
-          text: commentTextareaElement.value
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;"),
-          name: nameInputElement.value
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;"),
-          forceError: true
-        })
-      })
-        .then((response) => {
-          if (response.status === 200) {
-            return response.json();
-          }
-          if (response.status === 400) {
-            throw new Error("Плохой запрос");
-          }
-          if (response.status === 500) {
-            throw new Error("Сервер сломался");
-          }
-        })
-        .then(() => {
-          return fetchAndRenderComments();
-        })
-        .then(() => {
-          // formElement.innerHTML = formHtml;
-          document.querySelector(".form-loading").style.display = "none";
-          document.querySelector(".add-form").style.display = "block";
-          nameInputElement.value = "";
-          commentTextareaElement.value = "";
-        })
-        .catch((error) => {
-          document.querySelector(".form-loading").style.display = "none";
-          document.querySelector(".add-form").style.display = "block";
-          if (error.message === "Плохой запрос") {
-            alert("Имя и комментарий должны быть не короче 3 символов");
-          }
-          if (error.message === "Сервер сломался") {
-            alert("Сервер сломался, попробуй позже");
-          }
-          if (error.message !== "Плохой запрос" && error.message !== "Сервер сломался") {
-            alert("Кажется, у вас сломался интернет, попробуйте позже");
-          }
-          console.warn(error);
-        });
-    });
-  }
-
   listElement.textContent = "Пожалуйста, подождите, комментарии добавляются...";
   fetchAndRenderComments();
-  renderForm();
+  loadingElement.classList.add("none");
+
+  nameInputElement.addEventListener("input", () => {
+    if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
+      buttonElement.removeAttribute("disabled");
+      buttonElement.classList.remove("error");
+    }
+  });
+
+  commentTextareaElement.addEventListener("input", () => {
+    if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
+      buttonElement.removeAttribute("disabled");
+      buttonElement.classList.remove("error");
+    }
+  });
+
+  buttonElement.addEventListener("click", () => {
+    if (nameInputElement.value === "" || commentTextareaElement.value === "") {
+      buttonElement.setAttribute("disabled", "disabled");
+      buttonElement.classList.add("error");
+      return;
+    }
+
+    loadingElement.classList.remove("none");
+    formElement.classList.add("none");
+    
+    fetch (host + "/comments", {
+      method: "POST",
+      body: JSON.stringify({
+        text: commentTextareaElement.value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;"),
+        name: nameInputElement.value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;"),
+        forceError: true
+      })
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 400) {
+          throw new Error("Плохой запрос");
+        }
+        if (response.status === 500) {
+          throw new Error("Сервер сломался");
+        }
+      })
+      .then(() => {
+        return fetchAndRenderComments();
+      })
+      .then(() => {
+        loadingElement.classList.add("none");
+        formElement.classList.remove("none");
+        nameInputElement.value = "";
+        commentTextareaElement.value = "";
+      })
+      .catch((error) => {
+        loadingElement.classList.add("none");
+        formElement.classList.remove("none");
+        if (error.message === "Плохой запрос") {
+          alert("Имя и комментарий должны быть не короче 3 символов");
+        }
+        if (error.message === "Сервер сломался") {
+          alert("Сервер сломался, попробуй позже");
+        }
+        if (error.message !== "Плохой запрос" && error.message !== "Сервер сломался") {
+          alert("Кажется, у вас сломался интернет, попробуйте позже");
+        }
+        console.warn(error);
+      });
+  })
 
 </script>
 
