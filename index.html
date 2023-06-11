@@ -54,20 +54,26 @@
   const fetchAndRenderComments = () => {
     return fetch("https://wedev-api.sky.pro/api/v1/pauline-orda/comments", {
       method: "GET"
-    }).then((response) => {
-      return response.json();
-    }).then((responseData) => {
-      comments = responseData.comments.map((comment) => {
-        return {
-          userName: comment.author.name,
-          date: new Date(comment.date),
-          text: comment.text,
-          likeCounter: comment.likes,
-          isLiked: false,
-        }
-      })
-      renderComments();
     })
+      .then((response) => {
+        return response.json();
+      })
+      .then((responseData) => {
+        comments = responseData.comments.map((comment) => {
+          return {
+            userName: comment.author.name,
+            date: new Date(comment.date),
+            text: comment.text,
+            likeCounter: comment.likes,
+            isLiked: false,
+          }
+        })
+        renderComments();
+      })
+      .catch((error) => {
+        alert("Кажется, у вас сломался интернет, попробуйте позже");
+        console.warn(error);
+      });
   }
 
   const renderComments = () => {
@@ -147,20 +153,45 @@
             .replaceAll("&", "&amp;")
             .replaceAll("<", "&lt;")
             .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
+            .replaceAll('"', "&quot;"),
+          forceError: true
         })
-      }).then((response) => {
-        return response.json();
-      }).then(() => {
-        return fetchAndRenderComments();
-      }).then(() => {
-        // formElement.innerHTML = formHtml;
-        document.querySelector(".form-loading").style.display = "none";
-        document.querySelector(".add-form").style.display = "block";
-      });
-
-      nameInputElement.value = "";
-      commentTextareaElement.value = "";
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            return response.json();
+          }
+          if (response.status === 400) {
+            throw new Error("Плохой запрос");
+          }
+          if (response.status === 500) {
+            throw new Error("Сервер сломался");
+          }
+        })
+        .then(() => {
+          return fetchAndRenderComments();
+        })
+        .then(() => {
+          // formElement.innerHTML = formHtml;
+          document.querySelector(".form-loading").style.display = "none";
+          document.querySelector(".add-form").style.display = "block";
+          nameInputElement.value = "";
+          commentTextareaElement.value = "";
+        })
+        .catch((error) => {
+          document.querySelector(".form-loading").style.display = "none";
+          document.querySelector(".add-form").style.display = "block";
+          if (error.message === "Плохой запрос") {
+            alert("Имя и комментарий должны быть не короче 3 символов");
+          }
+          if (error.message === "Сервер сломался") {
+            alert("Сервер сломался, попробуй позже");
+          }
+          if (error.message !== "Плохой запрос" && error.message !== "Сервер сломался") {
+            alert("Кажется, у вас сломался интернет, попробуйте позже");
+          }
+          console.warn(error);
+        });
     });
   }
 
