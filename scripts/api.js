@@ -25,8 +25,16 @@ export const fetchPost = (text, name) => {
    return fetch(host + "/comments", {
         method: "POST",
         body: JSON.stringify({
-            text: text.value,
+            text: text.value
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;"),
             name: name.value
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
         })
     })
 }
