@@ -1,3 +1,5 @@
+import { fetchComments, fetchPost } from "./api.js";
+
 const listElement = document.getElementById("list");
 const formElement = document.getElementById("comment-add-form");
 const buttonElement = document.getElementById("add-button");
@@ -36,22 +38,9 @@ const initAnswerListeners = () => {
 }
 
 const fetchAndRenderComments = () => {
-    return fetch(host + "/comments", {
-        method: "GET"
-    })
-        .then((response) => {
-            return response.json();
-        })
-        .then((responseData) => {
-            comments = responseData.comments.map((comment) => {
-                return {
-                    userName: comment.author.name,
-                    date: new Date(comment.date),
-                    text: comment.text,
-                    likeCounter: comment.likes,
-                    isLiked: false,
-                }
-            })
+    fetchComments()
+        .then((data) => {
+            comments = data;
             renderComments();
         })
         .catch((error) => {
@@ -90,7 +79,6 @@ const renderComments = () => {
 listElement.textContent = "Пожалуйста, подождите, комментарии добавляются...";
 fetchAndRenderComments();
 loadingElement.classList.add("none");
-console.log(loadingElement.classList);
 
 nameInputElement.addEventListener("input", () => {
     if (nameInputElement.value !== "" && commentTextareaElement.value !== "") {
@@ -116,22 +104,7 @@ buttonElement.addEventListener("click", () => {
     loadingElement.classList.remove("none");
     formElement.classList.add("none");
 
-    fetch(host + "/comments", {
-        method: "POST",
-        body: JSON.stringify({
-            text: commentTextareaElement.value
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;"),
-            name: nameInputElement.value
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;"),
-            forceError: true
-        })
-    })
+    fetchPost(commentTextareaElement, nameInputElement)
         .then((response) => {
             if (response.status === 200) {
                 return response.json();
