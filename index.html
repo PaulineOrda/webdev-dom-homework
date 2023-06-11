@@ -13,6 +13,7 @@
     </ul>
     <div id="comment-add-form" class="add-form">
     </div>
+    <div class="form-loading">Комментарий добавляется...</div>
   </div>
 </body>
 
@@ -97,6 +98,7 @@
   }
 
   const renderForm = () => {
+    document.querySelector(".form-loading").style.display = "none";
     const formHtml = `<input id="name-input" type="text" class="add-form-name" placeholder="Введите ваше имя" />
       <textarea id="comment-text" type="textarea" class="add-form-text" placeholder="Введите ваш комментарий"
         rows="4"></textarea>
@@ -129,7 +131,10 @@
         buttonElement.classList.add("error");
         return;
       }
-      formElement.textContent = "Комментарий добавляется..."
+
+      // formElement.textContent = "Комментарий добавляется..."
+      document.querySelector(".form-loading").style.display = "block";
+      document.querySelector(".add-form").style.display = "none";
       fetch("https://wedev-api.sky.pro/api/v1/pauline-orda/comments", {
         method: "POST",
         body: JSON.stringify({
@@ -149,7 +154,9 @@
       }).then(() => {
         return fetchAndRenderComments();
       }).then(() => {
-        formElement.innerHTML = formHtml;
+        // formElement.innerHTML = formHtml;
+        document.querySelector(".form-loading").style.display = "none";
+        document.querySelector(".add-form").style.display = "block";
       });
 
       nameInputElement.value = "";
