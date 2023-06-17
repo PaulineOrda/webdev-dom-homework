@@ -1,8 +1,11 @@
-const host = "https://wedev-api.sky.pro/api/v1/pauline-orda";
+const host = "https://wedev-api.sky.pro/api/v2/pauline-orda";
 
-export const fetchComments = () => {
+export const fetchComments = (token) => {
     return fetch(host + "/comments", {
-        method: "GET"
+        method: "GET",
+        headers: {
+            Authorization: token,
+        },
     })
         .then((response) => {
             return response.json();
@@ -21,9 +24,12 @@ export const fetchComments = () => {
         });
 }
 
-export const fetchPost = (text, name) => {
+export const fetchPost = (token, text, name) => {
    return fetch(host + "/comments", {
         method: "POST",
+        headers: {
+            Authorization: token,
+        },
         body: JSON.stringify({
             text: text.value
             .replaceAll("&", "&amp;")
